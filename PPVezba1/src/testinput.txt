@@ -1,0 +1,21 @@
+(* Test programa *)
+program Test_Svega
+begin
+    rezultat1 : integer;
+    neki_znak : char;
+    poruka : string;
+    ulazni_fajl : file;
+
+    rezultat1 = 123 + 077 - 0x1A;
+    neki_znak = 'A';
+    poruka = "Ovo je string konstanta sa brojem 0.";
+    prazan_string = ''; 
+
+    read (rezultat1 in ulazni_fajl) do
+    begin
+        rezultat1 = rezultat1 + 1;
+    end;
+
+    @ # ?
+end
+return
