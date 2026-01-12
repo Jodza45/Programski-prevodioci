@@ -1,0 +1,20 @@
+program
+begin
+   x : integer;
+   
+   (* GRESKA 1: Fali tip promenljive, ali ima tacka-zarez *)
+   y : ; 
+
+   (* Ispravna naredba *)
+   x = 10;
+   
+   (* GRESKA 2: Fali izraz posle jednako *)
+   x = ;
+   
+   read(x in y) do 
+   begin
+      temp : integer;
+      x = x + 1
+   end
+end
+return

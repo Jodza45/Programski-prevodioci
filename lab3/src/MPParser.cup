@@ -1,0 +1,103 @@
+package rs.ac.bg.etf.pp1;
+
+import java_cup.runtime.*;
+import java.io.*;
+
+parser code {:
+   public static void main(String[] args) throws Exception {
+       // Ovi redovi sluze za rucno testiranje parsera
+       FileReader fileReader = new FileReader(args[0]);
+       MPLexer lexer = new MPLexer(fileReader);
+       MPParser parser = new MPParser(lexer);
+       Symbol s = parser.parse(); 
+       System.out.println("\nParsiranje uspesno zavrseno!");
+   }
+
+   public void syntax_error(Symbol cur_token) {
+       System.out.println("Sintaksna greska na liniji " + cur_token.left + ", simbol: " + cur_token.value);
+   }
+:}
+
+/* TERMINALI (Tokeni koje vraca Lekser) */
+terminal PROGRAM, RETURN, BEGIN, END;
+terminal INTEGER, CHAR, STRING, FILE;
+terminal OPEN, READ, IN, DO;
+terminal PLUS, MINUS, ASSIGN, COLON, SEMI, LPAREN, RPAREN;
+terminal String ID;
+terminal Object CONST; // Moze biti Integer ili String, zato Object
+
+/* NETERMINALI (Pojmovi iz gramatike) */
+non terminal Program, Block, VarList, Var, Type;
+non terminal Statements, Statement, Assignment, ReadExpression;
+non terminal Expression, ArithmeticExpression, PrimaryExpression;
+
+/* GRAMATIKA */
+
+// 1. Program -> program Block return
+Program ::= PROGRAM Block RETURN
+          {: System.out.println("Redukcija: Program"); :}
+          ;
+
+// 2. Block -> begin VarList Statements end
+Block ::= BEGIN VarList Statements END
+        {: System.out.println("Redukcija: Block"); :}
+        ;
+
+// 3. VarList -> VarList Var | Var
+VarList ::= VarList Var
+          | Var
+          ;
+
+// 4. Var -> ID : Type ;
+Var ::= ID COLON Type SEMI
+      {: System.out.println("Redukcija: Deklaracija promenljive"); :}
+      | ID COLON error SEMI
+      {: System.out.println("Greska: Nedostaje tip promenljive! Oporavak do ;"); :}
+      | error SEMI
+      {: System.out.println("Greska u definiciji promenljive! Oporavak do ;"); :}
+      ;
+
+// 5. Type -> integer | char | string | file
+Type ::= INTEGER
+       | CHAR
+       | STRING
+       | FILE
+       ;
+
+// 6. Statements -> Statements ; Statement | Statement
+Statements ::= Statements SEMI Statement
+             | Statement
+             ;
+
+// 7. Statement -> Assignment | ReadExpression
+Statement ::= Assignment
+            | ReadExpression
+            ;
+
+// 8. Assignment -> ID = Expression
+Assignment ::= ID ASSIGN Expression
+             {: System.out.println("Redukcija: Assignment"); :}
+             | ID ASSIGN error
+             {: System.out.println("Greska u dodeli vrednosti! Oporavak."); :}
+             ;
+
+// 9. ReadExpression -> read ( ID in ID ) do Block
+ReadExpression ::= READ LPAREN ID IN ID RPAREN DO Block
+                 {: System.out.println("Redukcija: ReadExpression"); :}
+                 ;
+
+// 10. Expression -> ArithmeticExpression | open ( PrimaryExpression )
+Expression ::= ArithmeticExpression
+             | OPEN LPAREN PrimaryExpression RPAREN
+             ;
+
+// 11. ArithmeticExpression -> ArithmeticExpression + PrimaryExpression ...
+ArithmeticExpression ::= ArithmeticExpression PLUS PrimaryExpression
+                       | ArithmeticExpression MINUS PrimaryExpression
+                       | PrimaryExpression
+                       ;
+
+// 12. PrimaryExpression -> ID | CONST
+PrimaryExpression ::= ID
+                    | CONST
+                    ;

@@ -1,0 +1,4 @@
+read ( input_var in data_file ) do
+    a = b ;
+    c = 42 ;
+    final_result = a

@@ -1,0 +1,94 @@
+import java_cup.runtime.*;
+import java.io.*;
+
+parser code {:
+   public static void main(String[] args) throws Exception {
+       FileReader fileReader = new FileReader(args[0]);
+       MPLexer lexer = new MPLexer(fileReader);
+       MPParser parser = new MPParser(lexer);
+       Symbol s = parser.parse(); 
+       System.out.println("\nParsiranje uspesno zavrseno!");
+   }
+
+   public void syntax_error(Symbol cur_token) {
+       System.out.println("Sintaksna greska na liniji " + cur_token.left + ", simbol: " + cur_token.value);
+   }
+:}
+
+/* TERMINALI */
+terminal PROGRAM, RETURN, BEGIN, END;
+terminal INTEGER, CHAR, STRING, FILE;
+terminal OPEN, READ, IN, DO;
+terminal PLUS, MINUS, ASSIGN, COLON, SEMI, LPAREN, RPAREN;
+terminal String ID;
+terminal Object CONST;
+
+/* NETERMINALI */
+non terminal Program, Block, VarList, Var, Type;
+non terminal Statements, Statement, Assignment, ReadExpression;
+non terminal Expression, ArithmeticExpression, PrimaryExpression;
+
+/* GRAMATIKA */
+
+// 1. Program
+Program ::= PROGRAM Block RETURN
+          {: System.out.println("Redukcija: Program"); :}
+          ;
+
+// 2. Block
+Block ::= BEGIN VarList Statements END
+        {: System.out.println("Redukcija: Block"); :}
+        ;
+
+// 3. VarList
+VarList ::= VarList Var
+          | Var
+          ;
+
+// 4. Var (CISTA VERZIJA - BEZ ERROR-a)
+Var ::= ID COLON Type SEMI
+      {: System.out.println("Redukcija: Deklaracija promenljive"); :}
+      ;
+
+// 5. Type
+Type ::= INTEGER
+       | CHAR
+       | STRING
+       | FILE
+       ;
+
+// 6. Statements
+Statements ::= Statements SEMI Statement
+             | Statement
+             ;
+
+// 7. Statement
+Statement ::= Assignment
+            | ReadExpression
+            ;
+
+// 8. Assignment (CISTA VERZIJA - BEZ ERROR-a)
+Assignment ::= ID ASSIGN Expression
+             {: System.out.println("Redukcija: Assignment"); :}
+             ;
+
+// 9. ReadExpression
+ReadExpression ::= READ LPAREN ID IN ID RPAREN DO Block
+                 {: System.out.println("Redukcija: ReadExpression"); :}
+                 ;
+
+// 10. Expression
+Expression ::= ArithmeticExpression
+             | OPEN LPAREN PrimaryExpression RPAREN
+             ;
+
+// 11. ArithmeticExpression
+ArithmeticExpression ::= ArithmeticExpression PLUS PrimaryExpression
+                       | ArithmeticExpression MINUS PrimaryExpression
+                       | PrimaryExpression
+                       ;
+
+// 12. PrimaryExpression
+PrimaryExpression ::= ID
+                    | CONST
+                    ;
